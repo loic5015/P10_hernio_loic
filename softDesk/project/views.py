@@ -43,7 +43,7 @@ class AdminProjectsViewset(ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = Projects.objects.all().filter(author=self.request.user.id)
         serializer = ProjectsListSerializer(queryset, many=True)
-        return serializer.data
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def create(self, request, *args, **kwargs):
         project = Projects(author=self.request.user)
