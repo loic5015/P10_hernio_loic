@@ -14,15 +14,10 @@ class UsersCreateViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
 class EmailTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+
 class UsersListViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = Users.objects.all()
 
     serializer_class = UserSerializer
 
     permission_classes = [IsAuthorize]
-
-
-
-
-
-

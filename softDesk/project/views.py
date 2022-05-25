@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,7 +7,6 @@ from .serializers import ProjectsListSerializer, \
 from .models import Projects, Contributors, Issues, Comments
 from .permissions import IsAuthorize, IsOwnerOrContributorProject, IsOwner, IsOwnerOrContributorIssue
 from authentication.models import Users
-
 
 
 class AdminProjectsViewset(ModelViewSet):
@@ -23,7 +22,6 @@ class AdminProjectsViewset(ModelViewSet):
             permission_classes = [IsAuthorize, IsOwner]
 
         return [permission() for permission in permission_classes]
-
 
     def list(self, request, *args, **kwargs):
         queryset = self.queryset.filter(author=self.request.user.id)
@@ -51,7 +49,6 @@ class AdminProjectsViewset(ModelViewSet):
         serializer = ProjectsDetailSerializer(queryset)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
     def update(self, request, pk=None, *args, **kwargs):
         project = get_object_or_404(self.queryset, pk=pk)
         serializer = ProjectsListSerializer(project, data=request.data)
@@ -60,7 +57,6 @@ class AdminProjectsViewset(ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def destroy(self, request, pk=None, *args, **kwargs):
         project = get_object_or_404(self.queryset, pk=pk)
@@ -84,7 +80,6 @@ class UsersProjectlistViewset(ModelViewSet):
         queryset = self.queryset.filter(project=project_pk)
         serializer = ContributorsDetailSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
 
     def create(self, request, project_pk=None, *args, **kwargs):
         projects = Projects.objects.all()
@@ -126,7 +121,6 @@ class IssuesProjectlistViewset(ModelViewSet):
         queryset = self.queryset.filter(project=project_pk)
         serializer = IssuesListSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
 
     def create(self, request, project_pk=None, *args, **kwargs):
         projects = Projects.objects.all()
@@ -179,7 +173,6 @@ class CommentsProjectListViewset(ModelViewSet):
         queryset = self.queryset.filter(issue=issue_pk)
         serializer = CommentsListSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
 
     def create(self, request, project_pk=None, issue_pk=None, *args, **kwargs):
         issues = Issues.objects.all()

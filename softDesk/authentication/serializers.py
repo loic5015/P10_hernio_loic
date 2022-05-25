@@ -1,10 +1,7 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import ModelSerializer
 from .models import Users
 from django.contrib.auth.hashers import make_password
-
-from rest_framework_simplejwt.serializers import TokenObtainSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class UsersDetailsSerializer(ModelSerializer):
@@ -25,4 +22,3 @@ class UsersDetailsSerializer(ModelSerializer):
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = Users.EMAIL_FIELD
-

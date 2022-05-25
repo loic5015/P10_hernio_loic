@@ -1,6 +1,7 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import ModelSerializer
 from .models import Projects, Contributors, Issues, Comments
 from authentication.models import Users
+
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -13,32 +14,33 @@ class ProjectsListSerializer(ModelSerializer):
 
     class Meta:
         model = Projects
-        fields = ['id','title', 'type', 'description', 'author']
-
+        fields = ['id', 'title', 'type', 'description', 'author']
 
 
 class ContributorsDetailSerializer(ModelSerializer):
     user = UserSerializer(read_only=True)
 
-
     class Meta:
         model = Contributors
         fields = ['project', 'role', 'permission', 'user']
 
+
 class ProjectsDetailSerializer(ModelSerializer):
     author = UserSerializer(read_only=True)
     contributors = ContributorsDetailSerializer(read_only=True)
+
     class Meta:
         model = Projects
-        fields = ['id','title', 'type', 'description', 'author', 'contributors']
+        fields = ['id', 'title', 'type', 'description', 'author', 'contributors']
 
     def get_contributors(self, request, obj):
-        contributors = Contributors.objects.all().filter(project=obj.id)
+        contributors = obj.contributors.all()
         serializer = ContributorsDetailSerializer(contributors, many=True)
         return serializer
 
 
 class EmailSerializer(ModelSerializer):
+
     class Meta:
         model = Users
         fields = ['email']
@@ -51,7 +53,8 @@ class IssuesListSerializer(ModelSerializer):
 
     class Meta:
         model = Issues
-        fields = ['id','title', 'desc', 'tag', 'priority', 'status', 'assignee', 'author', 'project', 'created_time' ]
+        fields = ['id', 'title', 'desc', 'tag', 'priority', 'status', 'assignee', 'author', 'project', 'created_time']
+
 
 class CommentsListSerializer(ModelSerializer):
     author = UserSerializer(read_only=True)

@@ -1,4 +1,4 @@
-from django.db import models, transaction
+from django.db import models
 from django.conf import settings
 
 
@@ -68,5 +68,3 @@ class Comments(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments')
     issue = models.ForeignKey('Issues', on_delete=models.CASCADE, related_name='comments')
     created_time = models.DateTimeField(auto_now_add=True)
-
-
