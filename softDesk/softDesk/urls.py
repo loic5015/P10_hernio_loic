@@ -18,7 +18,7 @@ from rest_framework import routers
 from django.urls import path, include
 from project.views import AdminProjectsViewset, UsersProjectlistViewset,\
     IssuesProjectlistViewset, CommentsProjectListViewset
-from authentication.views import UsersCreateViewset
+from authentication.views import UsersCreateViewset, UsersListViewset
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_nested import routers
 
@@ -26,6 +26,8 @@ from rest_framework_nested import routers
 router = routers.SimpleRouter()
 router.register('projects', AdminProjectsViewset, basename='admin-projects')
 router.register('signup', UsersCreateViewset, basename='signup')
+router.register('list', UsersListViewset, basename='list-users')
+
 root_router = routers.NestedSimpleRouter(
     router,
     r'projects',

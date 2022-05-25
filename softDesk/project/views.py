@@ -3,45 +3,30 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import ProjectsListSerializer, \
-    ContributorsDetailSerializer, IssuesListSerializer, CommentsListSerializer
+    ContributorsDetailSerializer, IssuesListSerializer, CommentsListSerializer, ProjectsDetailSerializer
 from .models import Projects, Contributors, Issues, Comments
-from .permissions import IsProjectAuthorize, IsOwnerOrContributorProject, IsOwner, IsOwnerOrContributorIssue
+from .permissions import IsAuthorize, IsOwnerOrContributorProject, IsOwner, IsOwnerOrContributorIssue
 from authentication.models import Users
 
 
 
-class MultipleSerializerMixin:
-    # Un mixin est une classe qui ne fonctionne pas de façon autonome
-    # Elle permet d'ajouter des fonctionnalités aux classes qui les étendent
-
-    detail_serializer_class = None
-
-    def get_serializer_class(self):
-        # Notre mixin détermine quel serializer à utiliser
-        # même si elle ne sait pas ce que c'est ni comment l'utiliser
-        if self.action == 'retrieve' and self.detail_serializer_class is not None:
-            # Si l'action demandée est le détail alors nous retournons le serializer de détail
-            return self.detail_serializer_class
-        return super().get_serializer_class()
-
-
 class AdminProjectsViewset(ModelViewSet):
-
+    queryset = Projects.objects.all()
     serializer_class = ProjectsListSerializer
 
     def get_permissions(self):
-        if self.action == 'list':
-            permission_classes = [IsOwnerOrContributorProject]
+        if self.action == 'list' or self.action == 'get':
+            permission_classes = [IsAuthorize, IsOwnerOrContributorProject]
         elif self.action == 'create':
-            permission_classes = [IsProjectAuthorize]
+            permission_classes = [IsAuthorize]
         else:
-            permission_classes = [IsOwner]
+            permission_classes = [IsAuthorize, IsOwner]
 
         return [permission() for permission in permission_classes]
 
 
     def list(self, request, *args, **kwargs):
-        queryset = Projects.objects.all().filter(author=self.request.user.id)
+        queryset = self.queryset.filter(author=self.request.user.id)
         serializer = ProjectsListSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -61,9 +46,14 @@ class AdminProjectsViewset(ModelViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def get(self, request, pk=None, *args, **kwargs):
+        queryset = get_object_or_404(self.queryset, pk=pk)
+        serializer = ProjectsDetailSerializer(queryset)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
     def update(self, request, pk=None, *args, **kwargs):
-        queryset = Projects.objects.all()
-        project = get_object_or_404(queryset, pk=pk)
+        project = get_object_or_404(self.queryset, pk=pk)
         serializer = ProjectsListSerializer(project, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -73,10 +63,9 @@ class AdminProjectsViewset(ModelViewSet):
 
 
     def destroy(self, request, pk=None, *args, **kwargs):
-        queryset = Projects.objects.all()
-        project = get_object_or_404(queryset, pk=pk)
+        project = get_object_or_404(self.queryset, pk=pk)
         project.delete()
-        return Response(data={'reponse': 'project supprimé'}, status=status.HTTP_201_CREATED)
+        return Response(data={'response': 'project deleted'}, status=status.HTTP_201_CREATED)
 
 
 class UsersProjectlistViewset(ModelViewSet):
@@ -86,9 +75,9 @@ class UsersProjectlistViewset(ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'list' or self.action == 'create':
-            permission_classes = [IsOwnerOrContributorProject]
+            permission_classes = [IsAuthorize, IsOwnerOrContributorProject]
         else:
-            permission_classes = [IsOwner]
+            permission_classes = [IsAuthorize, IsOwner]
         return [permission() for permission in permission_classes]
 
     def list(self, request, project_pk=None, *args, **kwargs):
@@ -109,18 +98,17 @@ class UsersProjectlistViewset(ModelViewSet):
                 permission="CONTRIBUTOR",
             )
             contributor.save()
-            return Response(data={'success': 'utilisateur ajouté'}, status=status.HTTP_201_CREATED)
+            return Response(data={'success': 'user added'}, status=status.HTTP_201_CREATED)
         else:
-            return Response(data={'error': 'project inconnu ou utilisateur inconnu'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'project unknow or user unknow'}, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, project_pk=None, pk=None, *args, **kwargs):
-        contributors = get_object_or_404(self.queryset, pk=project_pk, user=pk)
-        if contributors is not None:
-            for contributor in queryset:
-                contributor.delete()
-            return Response(data={'success': 'utilisateur supprimé'}, status=status.HTTP_201_CREATED)
+        contributor = get_object_or_404(self.queryset, pk=project_pk, user=pk)
+        if contributor is not None:
+            contributor.delete()
+            return Response(data={'success': 'user deleted'}, status=status.HTTP_201_CREATED)
         else:
-            return Response(data={'error': 'project inconnu ou utilisateur inconnu'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'project unknow or user unknow'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class IssuesProjectlistViewset(ModelViewSet):
@@ -129,9 +117,9 @@ class IssuesProjectlistViewset(ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'list' or self.action == 'create':
-            permission_classes = [IsOwnerOrContributorIssue]
+            permission_classes = [IsAuthorize, IsOwnerOrContributorIssue]
         else:
-            permission_classes = [IsOwner]
+            permission_classes = [IsAuthorize, IsOwner]
         return [permission() for permission in permission_classes]
 
     def list(self, request, project_pk=None, *args, **kwargs):
@@ -154,7 +142,7 @@ class IssuesProjectlistViewset(ModelViewSet):
                 return Response(serializer.errors,
                                 status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(data={'error': 'project inconnu ou utilisateur inconnu'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'project unknow ou user unknow'}, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, project_pk=None, pk=None, *args, **kwargs):
         issue = get_object_or_404(self.queryset, pk=pk)
@@ -170,9 +158,9 @@ class IssuesProjectlistViewset(ModelViewSet):
         issue = get_object_or_404(self.queryset, pk=pk)
         if issue is not None:
             issue.delete()
-            return Response(data={'reponse': 'problème supprimé'}, status=status.HTTP_201_CREATED)
+            return Response(data={'response': 'issue deleted'}, status=status.HTTP_201_CREATED)
         else:
-            return Response(data={'error': 'problème inconnu'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'issue unknow'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CommentsProjectListViewset(ModelViewSet):
@@ -181,9 +169,9 @@ class CommentsProjectListViewset(ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'list' or self.action == 'create' or self.action == 'retrieve':
-            permission_classes = [IsOwnerOrContributorProject]
+            permission_classes = [IsAuthorize, IsOwnerOrContributorProject]
         else:
-            permission_classes = [IsOwner]
+            permission_classes = [IsAuthorize, IsOwner]
 
         return [permission() for permission in permission_classes]
 
@@ -206,7 +194,7 @@ class CommentsProjectListViewset(ModelViewSet):
                 return Response(serializer.errors,
                                 status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(data={'error': 'probleme inconnu'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'issue unknow'}, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, project_pk=None, pk=None, *args, **kwargs):
         comment = get_object_or_404(self.queryset, pk=pk)
@@ -221,9 +209,9 @@ class CommentsProjectListViewset(ModelViewSet):
         comment = get_object_or_404(self.queryset, pk=pk)
         if comment is not None:
             comment.delete()
-            return Response(data={'reponse': 'commentaire supprimé'}, status=status.HTTP_201_CREATED)
+            return Response(data={'response': 'comment deleted'}, status=status.HTTP_201_CREATED)
         else:
-            return Response(data={'error': 'commentaire inconnu'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'comment unknow'}, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         comment = get_object_or_404(self.queryset, pk=pk)

@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermission
 
 
-class IsProjectAuthorize(BasePermission):
+class IsAuthorize(BasePermission):
     def is_authenticated(self, request, view):
         return bool(request.user and request.user.is_authenticated)
 

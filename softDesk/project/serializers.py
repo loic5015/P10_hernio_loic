@@ -25,6 +25,19 @@ class ContributorsDetailSerializer(ModelSerializer):
         model = Contributors
         fields = ['project', 'role', 'permission', 'user']
 
+class ProjectsDetailSerializer(ModelSerializer):
+    author = UserSerializer(read_only=True)
+    contributors = ContributorsDetailSerializer(read_only=True)
+    class Meta:
+        model = Projects
+        fields = ['id','title', 'type', 'description', 'author', 'contributors']
+
+    def get_contributors(self, request, obj):
+        contributors = Contributors.objects.all().filter(project=obj.id)
+        serializer = ContributorsDetailSerializer(contributors, many=True)
+        return serializer
+
+
 class EmailSerializer(ModelSerializer):
     class Meta:
         model = Users
@@ -39,11 +52,6 @@ class IssuesListSerializer(ModelSerializer):
     class Meta:
         model = Issues
         fields = ['id','title', 'desc', 'tag', 'priority', 'status', 'assignee', 'author', 'project', 'created_time' ]
-
-    """def get_assignee(self, instance):
-        queryset = Users.objects.all().filter(id=assignee)
-        serializer = UserSerializer(queryset)
-        return serializer.data"""
 
 class CommentsListSerializer(ModelSerializer):
     author = UserSerializer(read_only=True)
