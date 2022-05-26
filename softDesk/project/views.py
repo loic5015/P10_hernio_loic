@@ -24,8 +24,13 @@ class AdminProjectsViewset(ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def list(self, request, *args, **kwargs):
-        queryset = self.queryset.filter(author=self.request.user.id)
-        serializer = ProjectsListSerializer(queryset, many=True)
+        contributors = Contributors.objects.all().filter(user=self.request.user.id)
+        project_id = [contributor.project.id for contributor in contributors]
+        projects = []
+        for id in project_id:
+            project = get_object_or_404(self.queryset, id=id)
+            projects.append(project)
+        serializer = ProjectsListSerializer(projects, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def create(self, request, *args, **kwargs):
@@ -98,7 +103,7 @@ class UsersProjectlistViewset(ModelViewSet):
             return Response(data={'error': 'project unknow or user unknow'}, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, project_pk=None, pk=None, *args, **kwargs):
-        contributor = get_object_or_404(self.queryset, pk=project_pk, user=pk)
+        contributor = get_object_or_404(self.queryset, project=project_pk, user=pk)
         if contributor is not None:
             contributor.delete()
             return Response(data={'success': 'user deleted'}, status=status.HTTP_201_CREATED)

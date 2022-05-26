@@ -17,6 +17,8 @@ class Contributors(models.Model):
     permission = models.CharField(choices=Permission.choices, max_length=30)
     role = models.CharField(choices=Role.choices, max_length=135)
 
+    unique_together = [['user', 'project']]
+
 
 class Projects(models.Model):
 
