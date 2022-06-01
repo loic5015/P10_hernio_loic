@@ -2,10 +2,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import ProjectsListSerializer, \
+from .serializers import ProjectsListSerializer,\
     ContributorsDetailSerializer, IssuesListSerializer, CommentsListSerializer, ProjectsDetailSerializer
 from .models import Projects, Contributors, Issues, Comments
-from .permissions import IsAuthorize, IsOwnerOrContributorProject, IsOwner, IsOwnerOrContributorIssue
+from .permissions import IsAuthorize, IsOwnerOrContributorProject, IsOwner, IsOwnerOrContributorIssue, IsOwnerProject, \
+    IsOwnerIssue, IsOwnerComment
+
 from authentication.models import Users
 
 
@@ -51,11 +53,16 @@ class AdminProjectsViewset(ModelViewSet):
 
     def get(self, request, pk=None, *args, **kwargs):
         queryset = get_object_or_404(self.queryset, pk=pk)
+        print(queryset)
+        if queryset is None:
+            return Response({'error', 'project not  exists'}, status=status.HTTP_400_BAD_REQUEST)
         serializer = ProjectsDetailSerializer(queryset)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None, *args, **kwargs):
         project = get_object_or_404(self.queryset, pk=pk)
+        if project is None:
+            return Response({'error', 'project not  exists'}, status=status.HTTP_400_BAD_REQUEST)
         serializer = ProjectsListSerializer(project, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -76,9 +83,9 @@ class UsersProjectlistViewset(ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'list' or self.action == 'create':
-            permission_classes = [IsAuthorize, IsOwnerOrContributorProject]
+            permission_classes = [IsAuthorize, IsOwnerOrContributorIssue]
         else:
-            permission_classes = [IsAuthorize, IsOwner]
+            permission_classes = [IsAuthorize, IsOwnerProject]
         return [permission() for permission in permission_classes]
 
     def list(self, request, project_pk=None, *args, **kwargs):
@@ -119,7 +126,7 @@ class IssuesProjectlistViewset(ModelViewSet):
         if self.action == 'list' or self.action == 'create':
             permission_classes = [IsAuthorize, IsOwnerOrContributorIssue]
         else:
-            permission_classes = [IsAuthorize, IsOwner]
+            permission_classes = [IsAuthorize, IsOwnerIssue]
         return [permission() for permission in permission_classes]
 
     def list(self, request, project_pk=None, *args, **kwargs):
@@ -168,9 +175,9 @@ class CommentsProjectListViewset(ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'list' or self.action == 'create' or self.action == 'retrieve':
-            permission_classes = [IsAuthorize, IsOwnerOrContributorProject]
+            permission_classes = [IsAuthorize, IsOwnerOrContributorIssue]
         else:
-            permission_classes = [IsAuthorize, IsOwner]
+            permission_classes = [IsAuthorize, IsOwnerComment]
 
         return [permission() for permission in permission_classes]
 

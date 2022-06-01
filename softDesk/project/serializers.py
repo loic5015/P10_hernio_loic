@@ -1,6 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from .models import Projects, Contributors, Issues, Comments
 from authentication.models import Users
+from rest_framework import serializers
 
 
 class UserSerializer(ModelSerializer):
@@ -27,16 +28,16 @@ class ContributorsDetailSerializer(ModelSerializer):
 
 class ProjectsDetailSerializer(ModelSerializer):
     author = UserSerializer(read_only=True)
-    contributors = ContributorsDetailSerializer(read_only=True)
+    contributors = serializers.SerializerMethodField()
 
     class Meta:
         model = Projects
         fields = ['id', 'title', 'type', 'description', 'author', 'contributors']
 
-    def get_contributors(self, request, obj):
-        contributors = obj.contributors.all()
-        serializer = ContributorsDetailSerializer(contributors, many=True)
-        return serializer
+    def get_contributors(self, request, instance):
+        queryset = instance.contributors.all()
+        serializer = ContributorsDetailSerializer(queryset, many=True)
+        return serializer.data
 
 
 class EmailSerializer(ModelSerializer):
