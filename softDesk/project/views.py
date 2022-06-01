@@ -5,8 +5,8 @@ from rest_framework import status
 from .serializers import ProjectsListSerializer,\
     ContributorsDetailSerializer, IssuesListSerializer, CommentsListSerializer, ProjectsDetailSerializer
 from .models import Projects, Contributors, Issues, Comments
-from .permissions import IsAuthorize, IsOwnerOrContributorProject, IsOwner, IsOwnerOrContributorIssue, IsOwnerProject, \
-    IsOwnerIssue, IsOwnerComment
+from .permissions import IsAuthorize, IsOwnerOrContributorProject, IsOwner, IsOwnerOrContributorIssue, \
+    IsOwnerProject, IsOwnerIssue, IsOwnerComment
 
 from authentication.models import Users
 
