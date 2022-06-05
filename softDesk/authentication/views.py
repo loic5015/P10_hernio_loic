@@ -7,6 +7,9 @@ from .models import Users
 
 
 class UsersCreateViewset(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """
+        Endpoint for create a new user
+    """
 
     serializer_class = UsersDetailsSerializer
 
@@ -16,6 +19,9 @@ class EmailTokenObtainPairView(TokenObtainPairView):
 
 
 class UsersListViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """
+           Endpoint for list all the users of the app. User must be authenticated
+    """
     queryset = Users.objects.all()
 
     serializer_class = UserSerializer

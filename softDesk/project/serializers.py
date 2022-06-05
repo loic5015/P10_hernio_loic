@@ -5,12 +5,18 @@ from rest_framework import serializers
 
 
 class UserSerializer(ModelSerializer):
+    """
+       Serialize the model Users
+    """
     class Meta:
         model = Users
         fields = ['id', 'first_name', 'last_name', 'is_active', 'email']
 
 
 class ProjectsListSerializer(ModelSerializer):
+    """
+       Serialize the model projects
+    """
     author = UserSerializer(read_only=True)
 
     class Meta:
@@ -19,6 +25,10 @@ class ProjectsListSerializer(ModelSerializer):
 
 
 class ContributorsDetailSerializer(ModelSerializer):
+    """
+           Serialize the model Contributors
+    """
+
     user = UserSerializer(read_only=True)
 
     class Meta:
@@ -27,6 +37,10 @@ class ContributorsDetailSerializer(ModelSerializer):
 
 
 class ProjectsDetailSerializer(ModelSerializer):
+    """
+           Serialize the model projects with all the fields
+    """
+
     author = UserSerializer(read_only=True)
     contributors = serializers.SerializerMethodField()
 
@@ -41,6 +55,9 @@ class ProjectsDetailSerializer(ModelSerializer):
 
 
 class EmailSerializer(ModelSerializer):
+    """
+           Serialize the model Users with field email
+    """
 
     class Meta:
         model = Users
@@ -48,6 +65,9 @@ class EmailSerializer(ModelSerializer):
 
 
 class IssuesListSerializer(ModelSerializer):
+    """
+           Serialize the model Issues with all the fields
+    """
     author = UserSerializer(read_only=True)
     project = ProjectsListSerializer(read_only=True)
     assignee = UserSerializer(read_only=True)
@@ -58,6 +78,9 @@ class IssuesListSerializer(ModelSerializer):
 
 
 class CommentsListSerializer(ModelSerializer):
+    """
+           Serialize the model Comments with all the fields
+    """
     author = UserSerializer(read_only=True)
     issue = IssuesListSerializer(read_only=True)
 

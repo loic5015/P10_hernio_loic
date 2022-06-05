@@ -12,6 +12,9 @@ from authentication.models import Users
 
 
 class AdminProjectsViewset(ModelViewSet):
+    """
+    Define all the endpoints and permission for a instance projects
+    """
     queryset = Projects.objects.all()
     serializer_class = ProjectsListSerializer
 
@@ -77,6 +80,9 @@ class AdminProjectsViewset(ModelViewSet):
 
 
 class UsersProjectlistViewset(ModelViewSet):
+    """
+    Define all the endpoints and permission for instance Contributors
+    """
 
     queryset = Contributors.objects.all()
     serializer_class = ContributorsDetailSerializer
@@ -119,6 +125,9 @@ class UsersProjectlistViewset(ModelViewSet):
 
 
 class IssuesProjectlistViewset(ModelViewSet):
+    """
+    Define all the endpoints and permissions for a instance Issues
+    """
     queryset = Issues.objects.all()
     serializer_class = IssuesListSerializer
 
@@ -170,6 +179,9 @@ class IssuesProjectlistViewset(ModelViewSet):
 
 
 class CommentsProjectListViewset(ModelViewSet):
+    """
+    Define all the endpoint and permission for the instance Comments
+    """
     queryset = Comments.objects.all()
     serializer_class = CommentsListSerializer
 
